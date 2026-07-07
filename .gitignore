@@ -1,0 +1,16 @@
+# Project exclude paths
+/integration-tests/target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Maven
+target/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
