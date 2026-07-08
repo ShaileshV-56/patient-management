@@ -1,408 +1,231 @@
 # 🏥 Patient Management System
 
-A cloud-native **Patient Management System** built using a **Microservices Architecture** with Spring Boot. The project demonstrates modern backend development practices including event-driven communication with Kafka, synchronous communication using gRPC, JWT-based authentication, Redis caching, API Gateway routing, Docker containerization, and application monitoring using Prometheus.
+> A **production-style Java Spring Boot Microservices** application demonstrating modern backend engineering practices including **REST APIs, gRPC, Apache Kafka, JWT Authentication, Spring Cloud Gateway, Redis Caching, Resilience4j Circuit Breakers, Prometheus, Grafana, Docker**, and **Integration Testing**.
 
-This project was developed to explore distributed systems concepts and the Spring ecosystem by breaking a healthcare application into independent services that communicate with one another.
+<p align="center">
+
+![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-brightgreen?style=for-the-badge&logo=springboot)
+![Kafka](https://img.shields.io/badge/Apache-Kafka-black?style=for-the-badge&logo=apachekafka)
+![gRPC](https://img.shields.io/badge/gRPC-Service-blue?style=for-the-badge)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue?style=for-the-badge&logo=postgresql)
+![Redis](https://img.shields.io/badge/Redis-Cache-red?style=for-the-badge&logo=redis)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue?style=for-the-badge&logo=docker)
+![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-orange?style=for-the-badge&logo=prometheus)
+![Grafana](https://img.shields.io/badge/Grafana-Dashboard-orange?style=for-the-badge&logo=grafana)
+
+</p>
+
+---
+
+# 📖 Overview
+
+Patient Management System is a **distributed microservices application** built with **Java 21** and **Spring Boot** to demonstrate real-world backend architecture.
+
+Unlike a traditional monolithic application, the system is divided into multiple independent services that communicate using the most appropriate communication pattern:
+
+- 🌐 REST APIs for client communication
+- ⚡ gRPC for fast synchronous service-to-service communication
+- 📨 Apache Kafka for asynchronous event-driven communication
+
+The project also incorporates production-grade backend concepts including:
+
+- 🔐 JWT Authentication & Authorization
+- 🌐 Spring Cloud Gateway
+- 💾 Redis Caching
+- ⚡ Circuit Breakers (Resilience4j)
+- 📊 Prometheus Monitoring
+- 📈 Grafana Dashboards
+- 🐳 Docker Containerization
+- 🧪 Integration Testing
 
 ---
 
 # ✨ Features
 
-- Microservices Architecture
-- RESTful APIs
-- JWT Authentication & Authorization
-- Spring Cloud API Gateway
-- Apache Kafka Event Streaming
-- gRPC Inter-Service Communication
-- Redis Caching
-- PostgreSQL Database
-- Dockerized Services
-- Prometheus Monitoring
-- Integration Testing
-- Global Exception Handling
-- Request Validation
-- Layered Architecture (Controller → Service → Repository)
-
----
-
-# 🏗️ Architecture
-
-```
-                              Client
-                                 │
-                                 ▼
-                        API Gateway (4004)
-                                 │
-          ┌──────────────────────┼──────────────────────┐
-          │                      │                      │
-          ▼                      ▼                      ▼
- Patient Service          Appointment Service      Auth Service
-      (4000)                    (4006)               (4005)
-          │
-          │ gRPC
-          ▼
- Billing Service (4001)
-
-          │
-          ▼
-      Kafka Broker
-          │
-          ▼
- Analytics Service
-```
-
----
-
-# 📦 Microservices
-
-## 1. Patient Service
-
-**Port:** `4000`
-
-Responsible for managing patient records.
-
-### Features
+### 👨‍⚕️ Patient Management
 
 - Create Patient
 - Update Patient
 - Delete Patient
-- Get Patient by ID
-- Get All Patients
-- Pagination Support
-- Validation
-- Redis Cache
-- Kafka Producer
-- Prometheus Metrics
-- gRPC Client for Billing Service
+- Get Patient Details
+- Validation & Exception Handling
 
----
+### 🔐 Authentication
 
-## 2. Appointment Service
-
-**Port:** `4006`
-
-Responsible for appointment scheduling.
-
-### Features
-
-- Book Appointment
-- Retrieve Appointments
-- Kafka Consumer
-- Patient Cache
-- Exception Handling
-
----
-
-## 3. Billing Service
-
-**REST Port:** `4001`
-
-**gRPC Port:** `9001`
-
-Responsible for billing account creation.
-
-### Features
-
-- gRPC Server
-- Billing Account Generation
-- Kafka Consumer
-
----
-
-## 4. Auth Service
-
-**Port:** `4005`
-
-Responsible for authentication and authorization.
-
-### Features
-
-- JWT Authentication
-- BCrypt Password Encoding
+- JWT Login
+- Token Validation
+- Protected APIs
 - Spring Security
-- Login Endpoint
 
----
+### 🌐 API Gateway
 
-## 5. API Gateway
+- Centralized Routing
+- JWT Validation
+- Rate Limiting
+- Single Entry Point
 
-**Port:** `4004`
+### 💳 Billing
 
-Acts as the single entry point to the system.
+- gRPC Communication
+- Billing Account Creation
 
-### Features
-
-- Route Management
-- JWT Authentication Filter
-- Request Rate Limiting
-- Redis Integration
-- CORS Configuration
-
----
-
-## 6. Analytics Service
-
-Consumes Kafka events generated by the Patient Service.
-
-### Features
-
-- Kafka Consumer
-- Event Processing
-
----
-
-# 🛠️ Technology Stack
-
-## Backend
-
-- Java 21
-- Spring Boot 3
-- Spring Data JPA
-- Spring Security
-- Spring Validation
-- Spring Cloud Gateway
-- Spring AOP
-
-## Database
-
-- PostgreSQL
-
-## Messaging
+### 📨 Event Driven Architecture
 
 - Apache Kafka
+- Patient Created Events
+- Analytics Processing
+- Appointment Synchronization
 
-## Communication
+### ⚡ Performance
 
-- gRPC
-- Protocol Buffers
+- Redis Caching
+- Spring Data JPA
+- PostgreSQL
 
-## Cache
+### 📊 Monitoring
 
-- Redis
-
-## Monitoring
-
-- Micrometer
 - Prometheus
+- Grafana
+- Spring Boot Actuator
+- Micrometer
 
-## Build Tool
+### 🛡 Fault Tolerance
 
-- Maven
-
-## Containerization
-
-- Docker
-- Docker Compose
+- Resilience4j Circuit Breakers
 
 ---
 
-# 📁 Project Structure
+# 🛠 Tech Stack
 
+| Category | Technologies |
+|-----------|-------------|
+| **Language** | Java 21 |
+| **Framework** | Spring Boot 3 |
+| **Security** | Spring Security, JWT |
+| **Gateway** | Spring Cloud Gateway |
+| **Communication** | REST, gRPC |
+| **Messaging** | Apache Kafka |
+| **Serialization** | Protocol Buffers |
+| **Database** | PostgreSQL |
+| **Cache** | Redis |
+| **ORM** | Spring Data JPA |
+| **Monitoring** | Prometheus, Grafana |
+| **Observability** | Spring Boot Actuator, Micrometer |
+| **Fault Tolerance** | Resilience4j |
+| **Testing** | JUnit, Rest Assured |
+| **Build Tool** | Maven |
+| **Containerization** | Docker |
+
+---
+
+# 🏗️ Technical Architecture
+
+```mermaid
+flowchart LR
+
+Client["👨‍💻 Client Applications"]
+
+Gateway["🌐 API Gateway"]
+
+Auth["🔐 Auth Service"]
+
+Patient["🏥 Patient Service"]
+
+Billing["💳 Billing Service"]
+
+Kafka["📨 Apache Kafka"]
+
+Analytics["📊 Analytics Service"]
+
+Appointment["📅 Appointment Service"]
+
+Redis["⚡ Redis Cache"]
+
+Postgres["🗄 PostgreSQL"]
+
+Prometheus["📈 Prometheus"]
+
+Grafana["📉 Grafana"]
+
+Client --> Gateway
+
+Gateway --> Auth
+
+Gateway --> Patient
+
+Patient --> Postgres
+
+Patient --> Redis
+
+Patient -- gRPC --> Billing
+
+Patient --> Kafka
+
+Kafka --> Analytics
+
+Kafka --> Appointment
+
+Prometheus --> Gateway
+
+Prometheus --> Patient
+
+Prometheus --> Billing
+
+Prometheus --> Auth
+
+Prometheus --> Analytics
+
+Prometheus --> Appointment
+
+Grafana --> Prometheus
 ```
-patient-management
-│
-├── patient-service
-├── appointment-service
-├── billing-service
-├── auth-service
-├── analytics-service
+
+---
+
+# 🎯 System Architecture
+
+The application follows a **Microservices Architecture**, where each service owns its business logic and database while communicating through synchronous and asynchronous channels.
+
+| Service | Responsibility |
+|----------|---------------|
+| 🌐 API Gateway | Routing, Authentication, Rate Limiting |
+| 🔐 Auth Service | JWT Authentication & Validation |
+| 🏥 Patient Service | Patient CRUD Operations |
+| 💳 Billing Service | Billing Account Creation (gRPC) |
+| 📊 Analytics Service | Kafka Consumer for Analytics |
+| 📅 Appointment Service | Appointment Management |
+
+---
+
+# 🚀 Communication Pattern
+
+| Communication | Technology | Purpose |
+|---------------|------------|----------|
+| Client → Gateway | REST | External APIs |
+| Gateway → Auth | REST | JWT Validation |
+| Gateway → Patient | REST | CRUD Operations |
+| Patient → Billing | gRPC | Billing Account Creation |
+| Patient → Kafka | Kafka | Publish Patient Events |
+| Kafka → Analytics | Kafka Consumer | Analytics Processing |
+| Kafka → Appointment | Kafka Consumer | Patient Synchronization |
+
+---
+
+# 📂 Project Modules
+
+```text
+patient-management/
+
 ├── api-gateway
-├── monitoring
-├── integration-tests
+├── auth-service
+├── patient-service
+├── billing-service
+├── analytics-service
+├── appointment-service
+├── grpc-proto
 ├── docker-compose.yml
 └── README.md
 ```
 
 ---
-
-# 🔄 Communication Flow
-
-## Patient Registration
-
-```
-Client
-   │
-   ▼
-API Gateway
-   │
-   ▼
-Patient Service
-   │
-   ├──────────────► PostgreSQL
-   │
-   ├──────────────► Billing Service (gRPC)
-   │
-   └──────────────► Kafka
-                         │
-          ┌──────────────┴──────────────┐
-          ▼                             ▼
-Appointment Service          Analytics Service
-```
-
----
-
-# 📡 Event Driven Architecture
-
-Whenever a new patient is registered:
-
-- Patient Service publishes a Kafka event.
-- Appointment Service consumes the event.
-- Analytics Service consumes the event.
-- Billing Service creates a billing account through gRPC.
-
----
-
-# 🚀 Running the Project
-
-## Clone Repository
-
-```bash
-git clone https://github.com/ShaileshV-56/patient-management.git
-```
-
-```
-cd patient-management
-```
-
----
-
-## Start Docker Containers
-
-```bash
-docker-compose up -d
-```
-
-This starts:
-
-- PostgreSQL
-- Kafka
-- Redis
-- Prometheus
-
----
-
-## Build Project
-
-```bash
-mvn clean install
-```
-
----
-
-## Run Services
-
-Start services in the following order:
-
-1. Billing Service
-2. Auth Service
-3. Patient Service
-4. Appointment Service
-5. Analytics Service
-6. API Gateway
-
----
-
-# 🌐 Service Ports
-
-| Service | Port |
-|----------|------|
-| Patient Service | 4000 |
-| Billing Service | 4001 |
-| API Gateway | 4004 |
-| Auth Service | 4005 |
-| Appointment Service | 4006 |
-| Billing gRPC | 9001 |
-
----
-
-# 🔐 Authentication
-
-Authentication is implemented using:
-
-- Spring Security
-- JWT Tokens
-- BCrypt Password Encoder
-
-Authenticated users receive a JWT token which must be included in subsequent API requests.
-
----
-
-# ⚡ Redis
-
-Redis is used for:
-
-- Request Rate Limiting (API Gateway)
-- Patient Data Caching
-
----
-
-# 📊 Monitoring
-
-The project uses:
-
-- Micrometer
-- Prometheus
-
-Collected Metrics:
-
-- JVM Metrics
-- HTTP Request Metrics
-- Spring Boot Metrics
-- Custom Patient Service Metrics
-
----
-
-# 🧪 Testing
-
-Integration tests are located inside:
-
-```
-integration-tests/
-```
-
-Run tests using:
-
-```bash
-mvn test
-```
-
----
-
-# 📌 Future Improvements
-
-- Kubernetes Deployment
-- Eureka Service Discovery
-- Config Server
-- Distributed Tracing (Zipkin)
-- Resilience4j Circuit Breaker
-- Grafana Dashboards
-- CI/CD using GitHub Actions
-- OpenAPI/Swagger Documentation
-
----
-
-# 📸 Screenshots
-
-You can add screenshots of:
-
-- API Gateway Routes
-- Kafka Topics
-- Prometheus Dashboard
-- Database Tables
-- REST API Responses
-
----
-
-# 👨‍💻 Author
-
-**Shailesh V**
-
-Computer Science Undergraduate
-
-GitHub: https://github.com/ShaileshV-56
-
----
-
-# 📄 License
-
-This project is intended for educational and learning purposes.
