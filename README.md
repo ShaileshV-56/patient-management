@@ -227,5 +227,354 @@ patient-management/
 ├── docker-compose.yml
 └── README.md
 ```
+# 🧩 Microservices Overview
+
+The application follows the **Database per Service** pattern, where each microservice owns its own business logic and persistence layer. This enables independent development, deployment, and scaling while reducing coupling between services.
+
+---
+
+## 🌐 API Gateway
+
+The API Gateway acts as the **single entry point** for all client requests.
+
+### Responsibilities
+
+- Routes incoming requests to appropriate microservices
+- Validates JWT tokens through the Auth Service
+- Applies Rate Limiting
+- Hides internal microservice URLs from clients
+- Provides centralized request handling
+
+### Why API Gateway?
+
+Without an API Gateway:
+
+```text
+Client
+ ├── Patient Service
+ ├── Billing Service
+ ├── Auth Service
+ ├── Appointment Service
+ └── Analytics Service
+```
+
+The client must know every service URL.
+
+With an API Gateway:
+
+```text
+Client
+      │
+      ▼
+API Gateway
+      │
+ ┌────┴────┐
+ ▼         ▼
+Auth    Patient
+```
+
+The client communicates with only one endpoint while the Gateway handles routing internally.
+
+---
+
+## 🔐 Auth Service
+
+The Auth Service is responsible for authentication and authorization.
+
+### Responsibilities
+
+- User Login
+- Password Verification
+- JWT Generation
+- JWT Validation
+- User Management
+
+### Database
+
+- PostgreSQL
+
+### Main Components
+
+```text
+Controller
+     │
+     ▼
+Service
+     │
+     ▼
+Repository
+     │
+     ▼
+PostgreSQL
+```
+
+### Authentication Flow
+
+```text
+User Login
+
+↓
+
+Verify Credentials
+
+↓
+
+Generate JWT
+
+↓
+
+Return Token
+```
+
+The Gateway later validates every protected request using this service.
+
+---
+
+## 🏥 Patient Service
+
+The Patient Service is the **core business service** of the application.
+
+It manages patient records and coordinates communication with other services.
+
+### Responsibilities
+
+- Create Patient
+- Read Patient
+- Update Patient
+- Delete Patient
+- Validate Input
+- Publish Kafka Events
+- Call Billing Service via gRPC
+- Redis Caching
+
+### Architecture
+
+```text
+Controller
+     │
+     ▼
+Service
+     │
+     ▼
+Repository
+     │
+     ▼
+PostgreSQL
+```
+
+### Internal Workflow
+
+1. Validate Request DTO
+2. Check if Email Already Exists
+3. Save Patient
+4. Call Billing Service (gRPC)
+5. Publish Kafka Event
+6. Return Response
+
+---
+
+## 💳 Billing Service
+
+The Billing Service is responsible for managing billing accounts.
+
+Instead of exposing REST APIs, it exposes a **gRPC API** for high-performance internal communication.
+
+### Responsibilities
+
+- Create Billing Account
+- Respond to gRPC Requests
+
+### Communication
+
+```text
+Patient Service
+
+↓
+
+gRPC
+
+↓
+
+Billing Service
+
+↓
+
+Billing Account Created
+```
+
+Using gRPC instead of REST reduces serialization overhead and improves performance for internal service communication.
+
+---
+
+## 📊 Analytics Service
+
+The Analytics Service consumes events published to Kafka.
+
+It is completely independent of the Patient Service.
+
+### Responsibilities
+
+- Consume Patient Events
+- Process Analytics
+- Logging
+- Event Processing
+
+### Event Flow
+
+```text
+Patient Created
+
+↓
+
+Kafka Topic
+
+↓
+
+Analytics Service
+
+↓
+
+Process Event
+```
+
+The Patient Service does not know whether Analytics exists, making the architecture loosely coupled.
+
+---
+
+## 📅 Appointment Service
+
+The Appointment Service manages appointment-related operations.
+
+It also listens to Kafka events to keep patient information synchronized locally.
+
+### Responsibilities
+
+- Appointment Scheduling
+- Kafka Consumer
+- Patient Cache Synchronization
+
+### Why Consume Kafka Events?
+
+Instead of calling the Patient Service every time appointment data is required, the Appointment Service maintains its own lightweight copy of patient information.
+
+Benefits:
+
+- Reduced Network Calls
+- Faster Reads
+- Independent Availability
+- Better Scalability
+
+---
+
+# 🗄 Database Per Service Pattern
+
+Each microservice owns its own database.
+
+```text
+Patient Service
+       │
+       ▼
+Patient Database
+
+Billing Service
+       │
+       ▼
+Billing Database
+
+Auth Service
+       │
+       ▼
+User Database
+```
+
+### Why?
+
+Sharing databases tightly couples services.
+
+If Billing directly accesses the Patient database:
+
+- Schema changes become risky
+- Independent deployment becomes difficult
+- Services become dependent on each other
+
+Owning individual databases keeps each service autonomous.
+
+---
+
+# 🔄 Communication Between Services
+
+The application uses different communication mechanisms depending on the use case.
+
+| Communication | Technology | Why? |
+|---------------|------------|------|
+| Client → Gateway | REST | Public APIs |
+| Gateway → Auth | REST | Token Validation |
+| Gateway → Patient | REST | CRUD Operations |
+| Patient → Billing | gRPC | Fast synchronous communication |
+| Patient → Kafka | Kafka | Event Publishing |
+| Kafka → Analytics | Kafka Consumer | Analytics Processing |
+| Kafka → Appointment | Kafka Consumer | Patient Synchronization |
+
+---
+
+# 🧠 Why Multiple Communication Patterns?
+
+The project intentionally combines **REST**, **gRPC**, and **Kafka**, as each solves a different problem.
+
+### REST
+
+Used for communication with external clients.
+
+**Advantages**
+
+- Human-readable
+- Easy to debug
+- Widely supported
+
+---
+
+### gRPC
+
+Used for synchronous communication between internal services.
+
+**Advantages**
+
+- Binary serialization (Protocol Buffers)
+- Smaller payloads
+- Faster than REST
+- Strongly typed
+- Automatic client/server code generation
+
+---
+
+### Kafka
+
+Used for asynchronous event-driven communication.
+
+**Advantages**
+
+- Loose coupling
+- High throughput
+- Event replay
+- Independent consumers
+- Horizontal scalability
+
+Instead of directly notifying every service, the Patient Service publishes a single event, allowing multiple services to react independently.
+
+---
+
+# 📌 Why Microservices?
+
+Compared to a monolithic architecture, this design provides:
+
+- Independent deployment
+- Independent scaling
+- Better fault isolation
+- Technology flexibility
+- Clear ownership of business domains
+- Easier maintenance
+- Improved scalability
+
+Each microservice focuses on a single business capability while collaborating with others through well-defined interfaces.
 
 ---
