@@ -914,3 +914,433 @@ The system combines multiple communication styles because each serves a differen
 | PostgreSQL | Persistent storage |
 
 Choosing the appropriate communication mechanism for each interaction results in a scalable, maintainable, and loosely coupled architecture.
+
+# ⚙️ Production-Ready Features
+
+Beyond implementing business functionality, this project incorporates several production-grade backend engineering practices focused on **performance**, **fault tolerance**, **observability**, and **system reliability**.
+
+---
+
+# ⚡ Redis Caching
+
+The Patient Service uses **Redis** as an in-memory cache to reduce database access for frequently requested patient information.
+
+## Cache Workflow
+
+```mermaid
+flowchart LR
+
+Client
+
+PatientService
+
+Redis[(Redis Cache)]
+
+PostgreSQL[(PostgreSQL)]
+
+Client --> PatientService
+
+PatientService --> Redis
+
+Redis -- Cache Hit --> PatientService
+
+Redis -- Cache Miss --> PostgreSQL
+
+PostgreSQL --> PatientService
+
+PatientService --> Redis
+
+PatientService --> Client
+```
+
+## Cache Strategy
+
+1. Client requests patient details.
+2. Patient Service first checks Redis.
+3. If data exists (**Cache Hit**), it is returned immediately.
+4. Otherwise (**Cache Miss**), data is fetched from PostgreSQL.
+5. The result is stored in Redis for future requests.
+
+### Benefits
+
+- Reduced Database Load
+- Lower Latency
+- Faster Response Times
+- Improved Scalability
+
+---
+
+# 🛡 Circuit Breaker (Resilience4j)
+
+The Patient Service communicates synchronously with the Billing Service using gRPC.
+
+If Billing becomes unavailable, repeated requests could overwhelm the Patient Service.
+
+To prevent cascading failures, the project uses **Resilience4j Circuit Breakers**.
+
+---
+
+## Circuit Breaker States
+
+```mermaid
+stateDiagram-v2
+
+[*] --> Closed
+
+Closed --> Open : Failure Threshold Reached
+
+Open --> HalfOpen : Wait Duration Elapsed
+
+HalfOpen --> Closed : Successful Request
+
+HalfOpen --> Open : Request Failed
+```
+
+---
+
+## Closed State
+
+All requests are forwarded normally.
+
+```text
+Patient Service
+
+↓
+
+Billing Service
+
+↓
+
+Success
+```
+
+---
+
+## Open State
+
+After multiple consecutive failures:
+
+```text
+Patient Service
+
+↓
+
+Circuit Breaker
+
+↓
+
+Billing Service (Skipped)
+
+↓
+
+Immediate Failure Response
+```
+
+No requests reach the Billing Service.
+
+---
+
+## Half Open State
+
+After the configured wait duration:
+
+- A limited number of requests are allowed.
+- If successful, the circuit closes.
+- Otherwise, it reopens.
+
+---
+
+## Advantages
+
+- Prevents Cascading Failures
+- Faster Failure Detection
+- Improved Availability
+- Automatic Recovery
+
+---
+
+# 🚦 API Rate Limiting
+
+The API Gateway implements **Rate Limiting** to protect backend services against excessive traffic.
+
+```mermaid
+flowchart LR
+
+Client
+
+Gateway
+
+Patient
+
+Client --> Gateway
+
+Gateway -->|"Allowed"| Patient
+
+Gateway -->|"Limit Exceeded"| TooManyRequests["429 Too Many Requests"]
+```
+
+### Benefits
+
+- Prevents API Abuse
+- Protects Backend Services
+- Improves Stability
+- Supports Fair Resource Usage
+
+---
+
+# 📈 Spring Boot Actuator
+
+Spring Boot Actuator exposes operational endpoints that provide runtime information about the application.
+
+Available endpoints include:
+
+```text
+/actuator/health
+
+/actuator/info
+
+/actuator/metrics
+
+/actuator/prometheus
+```
+
+These endpoints are used for monitoring and health checks.
+
+---
+
+# 📊 Micrometer
+
+Micrometer serves as the metrics abstraction layer for Spring Boot.
+
+It collects application metrics and exports them in a format compatible with Prometheus.
+
+```text
+Spring Boot
+
+↓
+
+Micrometer
+
+↓
+
+Prometheus
+```
+
+---
+
+# 📈 Prometheus
+
+Prometheus continuously collects metrics from each microservice by scraping the `/actuator/prometheus` endpoint.
+
+## Monitoring Architecture
+
+```mermaid
+flowchart LR
+
+Gateway
+
+Patient
+
+Billing
+
+Analytics
+
+Appointment
+
+Actuator["Spring Boot Actuator"]
+
+Prometheus
+
+Gateway --> Actuator
+
+Patient --> Actuator
+
+Billing --> Actuator
+
+Analytics --> Actuator
+
+Appointment --> Actuator
+
+Actuator --> Prometheus
+```
+
+---
+
+## Metrics Collected
+
+- HTTP Request Count
+- Response Time
+- JVM Heap Usage
+- CPU Utilization
+- Active Threads
+- Kafka Metrics
+- Database Connection Pool
+- Memory Usage
+
+Prometheus stores these metrics in a time-series database for querying and visualization.
+
+---
+
+# 📉 Grafana
+
+Grafana connects to Prometheus and provides real-time dashboards for system monitoring.
+
+```mermaid
+flowchart LR
+
+Services
+
+Prometheus
+
+Grafana
+
+Services --> Prometheus
+
+Prometheus --> Grafana
+```
+
+Typical dashboards include:
+
+- JVM Memory
+- CPU Usage
+- HTTP Request Rate
+- Response Time
+- Kafka Throughput
+- Error Rate
+- Active Sessions
+
+---
+
+# 🐳 Dockerized Architecture
+
+Each microservice executes inside its own Docker container.
+
+```mermaid
+flowchart LR
+
+Gateway
+
+Patient
+
+Billing
+
+Analytics
+
+Appointment
+
+Auth
+
+Redis
+
+Kafka
+
+Postgres
+
+Gateway --- Patient
+
+Gateway --- Auth
+
+Patient --- Billing
+
+Patient --- Kafka
+
+Kafka --- Analytics
+
+Kafka --- Appointment
+
+Patient --- Redis
+
+Patient --- Postgres
+```
+
+Benefits:
+
+- Environment Consistency
+- Easy Deployment
+- Service Isolation
+- Independent Scaling
+
+---
+
+# 🧪 Integration Testing
+
+The project includes integration tests using:
+
+- JUnit
+- Rest Assured
+
+The tests validate complete request flows through the API Gateway.
+
+Typical scenarios include:
+
+- User Login
+- JWT Authentication
+- Protected APIs
+- Patient CRUD Operations
+- Invalid Token Handling
+- HTTP Status Validation
+
+---
+
+# 📊 Observability Stack
+
+```mermaid
+flowchart TD
+
+Application
+
+SpringActuator["Spring Boot Actuator"]
+
+Micrometer
+
+Prometheus
+
+Grafana
+
+Application --> SpringActuator
+
+SpringActuator --> Micrometer
+
+Micrometer --> Prometheus
+
+Prometheus --> Grafana
+```
+
+This monitoring pipeline provides visibility into application health and runtime performance.
+
+---
+
+# 🏆 Production Engineering Practices
+
+This project demonstrates several backend engineering concepts commonly found in production systems.
+
+| Feature | Technology |
+|----------|------------|
+| Authentication | JWT |
+| API Gateway | Spring Cloud Gateway |
+| Service Communication | gRPC |
+| Event Streaming | Apache Kafka |
+| Database | PostgreSQL |
+| Caching | Redis |
+| Fault Tolerance | Resilience4j |
+| Monitoring | Prometheus |
+| Visualization | Grafana |
+| Metrics | Spring Boot Actuator + Micrometer |
+| Containerization | Docker |
+| Testing | JUnit + Rest Assured |
+
+---
+
+# 💡 Design Principles
+
+The system was designed around the following principles:
+
+- Separation of Concerns
+- Loose Coupling
+- High Cohesion
+- Independent Deployability
+- Fault Isolation
+- Event-Driven Communication
+- Scalability
+- Observability
+- Resilience
