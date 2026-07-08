@@ -578,3 +578,339 @@ Compared to a monolithic architecture, this design provides:
 Each microservice focuses on a single business capability while collaborating with others through well-defined interfaces.
 
 ---
+# 🔄 Request & Communication Flows
+
+This section illustrates how the different microservices collaborate to process requests using **REST**, **gRPC**, and **Apache Kafka**.
+
+---
+
+# 🔐 Authentication Flow
+
+Before accessing protected APIs, users authenticate with the **Auth Service** to obtain a JWT.
+
+```mermaid
+sequenceDiagram
+
+actor User
+
+participant Gateway
+participant Auth
+participant Database
+
+User->>Gateway: POST /api/auth/login
+
+Gateway->>Auth: Forward Login Request
+
+Auth->>Database: Validate User
+
+Database-->>Auth: User Found
+
+Auth-->>Gateway: JWT Token
+
+Gateway-->>User: JWT Token
+```
+
+---
+
+# 🛡 Protected Request Flow
+
+Every secured request passes through the API Gateway.
+
+```mermaid
+sequenceDiagram
+
+actor User
+
+participant Gateway
+participant Auth
+participant Patient
+
+User->>Gateway: GET /patients
+
+Gateway->>Auth: Validate JWT
+
+Auth-->>Gateway: Valid Token
+
+Gateway->>Patient: Forward Request
+
+Patient-->>Gateway: Patient Data
+
+Gateway-->>User: Response
+```
+
+If the token is invalid, the Gateway immediately returns:
+
+```text
+401 Unauthorized
+```
+
+without forwarding the request.
+
+---
+
+# 🏥 Create Patient Flow
+
+This is the primary business workflow of the application.
+
+```mermaid
+sequenceDiagram
+
+actor User
+
+participant Gateway
+participant Auth
+participant Patient
+participant Database
+participant Billing
+
+User->>Gateway: POST /patients
+
+Gateway->>Auth: Validate JWT
+
+Auth-->>Gateway: Valid
+
+Gateway->>Patient: Create Patient
+
+Patient->>Database: Save Patient
+
+Database-->>Patient: Success
+
+Patient->>Billing: gRPC Create Billing Account
+
+Billing-->>Patient: Billing Account ID
+
+Patient-->>Gateway: Patient Created
+
+Gateway-->>User: 201 Created
+```
+
+---
+
+# ⚡ gRPC Communication
+
+Internal service-to-service communication uses **gRPC**.
+
+```mermaid
+sequenceDiagram
+
+participant Patient
+
+participant Billing
+
+Patient->>Billing: CreateBillingAccount()
+
+Billing->>Billing: Generate Account
+
+Billing-->>Patient: Billing Account Response
+```
+
+### Why gRPC?
+
+- Faster than REST
+- Binary Protocol Buffers
+- Strongly Typed
+- Automatic Code Generation
+- Ideal for Internal Communication
+
+---
+
+# 📨 Kafka Event Flow
+
+After successfully creating a patient, the Patient Service publishes an event.
+
+```mermaid
+sequenceDiagram
+
+participant Patient
+
+participant Kafka
+
+participant Analytics
+
+participant Appointment
+
+Patient->>Kafka: Publish PatientCreated Event
+
+Kafka-->>Analytics: Consume Event
+
+Kafka-->>Appointment: Consume Event
+```
+
+This architecture allows multiple services to react independently without modifying the Patient Service.
+
+---
+
+# 📊 Event Driven Architecture
+
+```mermaid
+flowchart LR
+
+PatientService
+
+Kafka[(Kafka Topic)]
+
+AnalyticsService
+
+AppointmentService
+
+PatientService -->|Patient Created| Kafka
+
+Kafka --> AnalyticsService
+
+Kafka --> AppointmentService
+```
+
+The Patient Service publishes an event only once, while any number of consumers can subscribe independently.
+
+---
+
+# ⚡ Redis Cache Flow
+
+Frequently accessed patient information is cached to reduce database load.
+
+```mermaid
+sequenceDiagram
+
+actor User
+
+participant Patient
+
+participant Redis
+
+participant Database
+
+User->>Patient: Get Patient
+
+Patient->>Redis: Check Cache
+
+alt Cache Hit
+
+Redis-->>Patient: Patient Data
+
+else Cache Miss
+
+Patient->>Database: Fetch Patient
+
+Database-->>Patient: Patient Data
+
+Patient->>Redis: Store Data
+
+end
+
+Patient-->>User: Response
+```
+
+### Benefits
+
+- Reduced database load
+- Faster response times
+- Lower latency
+- Improved scalability
+
+---
+
+# 💳 Billing Communication Flow
+
+```mermaid
+flowchart LR
+
+PatientService
+
+BillingService
+
+PatientService -->|"gRPC"| BillingService
+
+BillingService -->|"Billing Account"| PatientService
+```
+
+---
+
+# 🌐 Complete System Flow
+
+The following diagram summarizes the entire request lifecycle.
+
+```mermaid
+flowchart TD
+
+Client
+
+Gateway
+
+Auth
+
+Patient
+
+Redis
+
+Database
+
+Billing
+
+Kafka
+
+Analytics
+
+Appointment
+
+Client --> Gateway
+
+Gateway --> Auth
+
+Auth --> Gateway
+
+Gateway --> Patient
+
+Patient --> Redis
+
+Redis --> Patient
+
+Patient --> Database
+
+Database --> Patient
+
+Patient --> Billing
+
+Billing --> Patient
+
+Patient --> Kafka
+
+Kafka --> Analytics
+
+Kafka --> Appointment
+
+Patient --> Gateway
+
+Gateway --> Client
+```
+
+---
+
+# 📡 Communication Summary
+
+| Source | Destination | Protocol | Purpose |
+|----------|-------------|-----------|-----------|
+| Client | API Gateway | REST | External API Requests |
+| Gateway | Auth Service | REST | JWT Validation |
+| Gateway | Patient Service | REST | CRUD Operations |
+| Patient Service | Billing Service | gRPC | Billing Account Creation |
+| Patient Service | Kafka | Kafka Producer | Publish Patient Events |
+| Kafka | Analytics Service | Kafka Consumer | Event Processing |
+| Kafka | Appointment Service | Kafka Consumer | Patient Synchronization |
+| Patient Service | Redis | Redis Protocol | Cache Operations |
+| Patient Service | PostgreSQL | JDBC | Persistent Storage |
+
+---
+
+# 💡 Why This Architecture?
+
+The system combines multiple communication styles because each serves a different purpose.
+
+| Technology | Best Use Case |
+|------------|--------------|
+| REST | Client-facing APIs |
+| gRPC | Fast synchronous service communication |
+| Kafka | Asynchronous event streaming |
+| Redis | High-speed caching |
+| PostgreSQL | Persistent storage |
+
+Choosing the appropriate communication mechanism for each interaction results in a scalable, maintainable, and loosely coupled architecture.
