@@ -1774,3 +1774,298 @@ The system was designed around the following principles:
 - Scalability
 - Observability
 - Resilience
+
+# 🚀 Getting Started
+
+## Prerequisites
+
+Ensure the following tools are installed before running the project.
+
+| Software | Version |
+|----------|---------|
+| Java | 21+ |
+| Maven | 3.9+ |
+| Docker | Latest |
+| Docker Compose | Latest |
+| Git | Latest |
+
+---
+
+# 📦 Clone the Repository
+
+```bash
+git clone https://github.com/<your-username>/patient-management-system.git
+
+cd patient-management-system
+```
+
+---
+
+# 🐳 Running the Project
+
+## Build the Project
+
+```bash
+mvn clean install
+```
+
+---
+
+## Start All Services
+
+```bash
+docker compose up --build
+```
+
+or
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## Verify Running Containers
+
+```bash
+docker ps
+```
+
+Expected containers:
+
+- API Gateway
+- Patient Service
+- Billing Service
+- Auth Service
+- Analytics Service
+- Appointment Service
+- PostgreSQL
+- Redis
+- Kafka
+- Zookeeper
+- Prometheus
+- Grafana
+
+---
+
+# 🌐 Service Endpoints
+
+| Service | Endpoint |
+|----------|----------|
+| API Gateway | http://localhost:4004 |
+| Auth Service | http://localhost:4005 |
+| Patient Service | http://localhost:4000 |
+| Billing Service (gRPC) | localhost:9001 |
+| Kafka | localhost:9092 |
+| PostgreSQL | localhost:5432 |
+| Redis | localhost:6379 |
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3000 |
+
+> **Note:** Update the ports above if your `docker-compose.yml` uses different values.
+
+---
+
+# 🔑 Authentication
+
+Obtain a JWT token by logging in through the Auth Service.
+
+Example request:
+
+```http
+POST /api/auth/login
+
+{
+    "email":"admin@example.com",
+    "password":"password"
+}
+```
+
+Example response:
+
+```json
+{
+    "token":"<JWT_TOKEN>"
+}
+```
+
+Use the token for all protected endpoints.
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+# 📚 API Documentation
+
+Swagger/OpenAPI documentation is available for the REST services.
+
+Example:
+
+```
+http://localhost:4004/swagger-ui.html
+```
+
+or
+
+```
+http://localhost:4004/swagger-ui/index.html
+```
+
+depending on your Spring Boot version.
+
+---
+
+# 🧪 Running Tests
+
+Execute all integration and unit tests.
+
+```bash
+mvn test
+```
+
+The project contains tests for:
+
+- Authentication
+- Patient CRUD
+- JWT Validation
+- Gateway Routing
+- Protected APIs
+
+---
+
+# 📂 Project Structure
+
+```
+patient-management-system/
+
+├── api-gateway/
+│
+├── auth-service/
+│
+├── patient-service/
+│
+├── billing-service/
+│
+├── analytics-service/
+│
+├── appointment-service/
+│
+├── grpc-proto/
+│
+├── docker-compose.yml
+│
+├── pom.xml
+│
+└── README.md
+```
+
+---
+
+# 📖 Key Concepts Demonstrated
+
+This project demonstrates several important backend engineering concepts:
+
+- Microservices Architecture
+- API Gateway Pattern
+- JWT Authentication
+- Spring Security
+- REST APIs
+- gRPC
+- Apache Kafka
+- Event-Driven Architecture
+- Protocol Buffers
+- Redis Caching
+- Circuit Breakers
+- Rate Limiting
+- PostgreSQL
+- Spring Data JPA
+- Docker
+- Prometheus
+- Grafana
+- Spring Boot Actuator
+- Micrometer
+- Integration Testing
+
+---
+
+# 🎯 Learning Outcomes
+
+This project provided hands-on experience with:
+
+- Designing distributed systems
+- Building independently deployable microservices
+- Implementing synchronous and asynchronous communication
+- Securing APIs with JWT
+- Building fault-tolerant services
+- Monitoring application health
+- Improving application performance through caching
+- Containerizing applications with Docker
+- Writing integration tests for microservices
+
+---
+
+# 🔮 Future Improvements
+
+Potential enhancements include:
+
+- Kubernetes deployment
+- CI/CD using GitHub Actions
+- OpenTelemetry distributed tracing
+- Jaeger integration
+- ELK Stack for centralized logging
+- Saga Pattern for distributed transactions
+- Transactional Outbox Pattern
+- API Versioning
+- Role-Based Access Control (RBAC)
+- Notification Service
+- Email Service
+- Payment Service
+- Kubernetes Horizontal Pod Autoscaler
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+If you would like to improve the project:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Open a Pull Request.
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+# 👨‍💻 Author
+
+**Your Name**
+
+- GitHub: https://github.com/<your-username>
+- LinkedIn: https://linkedin.com/in/<your-linkedin>
+
+---
+
+# ⭐ Support
+
+If you found this project useful,
+
+⭐ **consider giving the repository a star!**
+
+It helps others discover the project and motivates future improvements.
+
+---
+
+<p align="center">
+
+### Built with ❤️ using Java, Spring Boot, Kafka, gRPC, Redis & Docker
+
+</p>
